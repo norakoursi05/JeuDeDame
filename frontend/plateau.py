@@ -1,5 +1,5 @@
 import pygame 
-from constants import BLACK , RED , ROWS , COLS , SQUARE_SIZE , WHITE,blackPion , grayPion
+from constants import SILVER , BLACK , ROWS , COLS , SQUARE_SIZE , WHITE,blackPion , WhitePion
 from pion import Pion
 
 class Plateau :
@@ -12,10 +12,10 @@ class Plateau :
     # Draw just squares 
 
     def draw_squares(self , win):
-        win.fill(BLACK)
+        win.fill(SILVER)
         for row in range(ROWS):
             for col in range(row % 2 , COLS , 2):
-                pygame.draw.rect(win , RED , (row*SQUARE_SIZE , col*SQUARE_SIZE , SQUARE_SIZE , SQUARE_SIZE ))
+                pygame.draw.rect(win , BLACK , (row*SQUARE_SIZE , col*SQUARE_SIZE , SQUARE_SIZE , SQUARE_SIZE ))
 
 
         
@@ -27,7 +27,7 @@ class Plateau :
             for col in range(COLS):
                 if col % 2 == (( row + 1 ) % 2 ) :
                     if row < 3 :
-                        self.plateau[row].append(Pion(row , col , grayPion))
+                        self.plateau[row].append(Pion(row , col , WhitePion))
                     elif row > 4 :
                         self.plateau[row].append(Pion(row , col , blackPion))
                     else :

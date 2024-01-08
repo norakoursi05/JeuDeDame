@@ -8,10 +8,12 @@ SQUARE_SIZE = WIDTH//COLS
 # RED = (255 , 0 , 0)
 # WHITE = (255 ,255 , 255)
 # BLACK = (0,0,0)
-RED = (130, 85, 59)
+#carré marron
+BLACK = (0, 0, 0)
 WHITE = (255 ,255 , 255)
-BLACK = (240, 202, 140)
+#carré beige
+SILVER = (192, 192, 192)
 BLUE = (0,0,255)
 GREY = (128 , 128 ,125)
-blackPion = (55, 26, 6)
-grayPion = (207, 153, 83)
+blackPion = (0, 0, 0)
+WhitePion = (255, 255, 255)

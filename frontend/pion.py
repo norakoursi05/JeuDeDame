@@ -1,5 +1,5 @@
 import pygame
-from constants import RED , WHITE , SQUARE_SIZE , GREY 
+from constants import BLACK , WHITE , SQUARE_SIZE , GREY 
 
 
 class Pion :
@@ -15,7 +15,7 @@ class Pion :
         self.y = 0 
         self.calc_pos()
 
-        # if self.color == RED :
+        # if self.color == BLACK :
         #     self.direction = -1
         # else :
         #     self.direction = 1
