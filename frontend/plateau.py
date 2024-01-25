@@ -2,6 +2,7 @@ import pygame
 from constants import SILVER , BLACK , ROWS , COLS , SQUARE_SIZE , WHITE,blackPion , WhitePion
 from pion import Pion
 
+
 class Plateau :
     def __init__(self):
         self.plateau = []
@@ -16,6 +17,20 @@ class Plateau :
         for row in range(ROWS):
             for col in range(row % 2 , COLS , 2):
                 pygame.draw.rect(win , BLACK , (row*SQUARE_SIZE , col*SQUARE_SIZE , SQUARE_SIZE , SQUARE_SIZE ))
+
+    # def move(self, pion, row, col):
+    #     self.plateau[pion.row][pion.col], self.plateau[row][col] = self.plateau[row][col], self.plateau[pion.row][pion.col]
+    #     pion.move(row, col)
+
+    #     if row == ROWS or row == 0:
+    #         pion.make_king()
+    #         if pion.color == WHITE:
+    #             self.white_kings += 1
+    #         else:
+    #             self.red_kings += 1
+    
+    # def get_pion(self, row, col):
+    #     return self.plateau[row][col]
 
 
         
@@ -46,6 +61,109 @@ class Plateau :
                 pion = self.plateau[row][col]
                 if pion != 0:
                     pion.draw(win)
+
+    
+
+    
+    def get_valid_moves(self, piece):
+        moves = {}
+        left = piece.col - 1
+        right = piece.col + 1
+        row = piece.row
+
+        if piece.color == blackPion or piece.king:
+            moves.update(self._traverse_left(row -1, max(row-3, -1), -1, piece.color, left))
+            moves.update(self._traverse_right(row -1, max(row-3, -1), -1, piece.color, right))
+        if piece.color == WhitePion or piece.king:
+            moves.update(self._traverse_left(row +1, min(row+3, ROWS), 1, piece.color, left))
+            moves.update(self._traverse_right(row +1, min(row+3, ROWS), 1, piece.color, right))
+    
+        return moves
+    
+    def _traverse_left(self, start, stop, step, color, left, skipped=[]):
+        moves = {}
+        last = []
+        for r in range(start, stop, step):
+            if left < 0:
+                break
+            current = self.plateau[r][left]
+            if current == 0:
+                if skipped and not last:
+                    break
+                elif skipped:
+                    moves[(r, left)] = last + skipped
+                else:
+                    moves[(r, left)] = last
+                
+                if last:
+                    if step == -1:
+                        row = max(r-3, 0)
+                    else:
+                        row = min(r+3, ROWS)
+                    moves.update(self._traverse_left(r+step, row, step, color, left-1,skipped=last))
+                    moves.update(self._traverse_right(r+step, row, step, color, left+1,skipped=last))
+                break
+            elif current.color == color:
+                break
+            else:
+                last = [current]
+
+            left -= 1
+        
+        return moves
+    
+    def _traverse_right(self, start, stop, step, color, right, skipped=[]):
+        moves = {}
+        last = []
+        for r in range(start, stop, step):
+            if right >= COLS:
+                break
+            
+            current = self.plateau[r][right]
+            if current == 0:
+                if skipped and not last:
+                    break
+                elif skipped:
+                    moves[(r,right)] = last + skipped
+                else:
+                    moves[(r, right)] = last
+                
+                if last:
+                    if step == -1:
+                        row = max(r-3, 0)
+                    else:
+                        row = min(r+3, ROWS)
+                    moves.update(self._traverse_left(r+step, row, step, color, right-1,skipped=last))
+                    moves.update(self._traverse_right(r+step, row, step, color, right+1,skipped=last))
+                break
+            elif current.color == color:
+                break
+            else:
+                last = [current]
+
+            right += 1
+        
+        return moves
+    
+    def get_pion(self, row, col):
+        return self.plateau[row][col]
+    
+
+    def changerPosition(self, piece, row, col):
+        self.plateau[piece.row][piece.col], self.plateau[row][col] = self.plateau[row][col], self.plateau[piece.row][piece.col]
+        piece.move(row, col)
+
+        if row == ROWS - 1 or row == 0:
+            piece.make_king()
+            if piece.color == WHITE:
+                self.white_kings += 1
+            else:
+                self.red_kings += 1 
+
+    def supprimer (self  , pion):
+        for p in pion:
+            self.plateau[p.row][p.col] = 0
+
 
 
         

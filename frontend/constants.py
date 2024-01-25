@@ -1,6 +1,6 @@
 import pygame 
 
-WIDTH , HEIGHT  = 800 , 800
+WIDTH , HEIGHT  = 700 , 700
 ROWS , COLS = 8, 8 
 SQUARE_SIZE = WIDTH//COLS
 
@@ -17,3 +17,7 @@ BLUE = (0,0,255)
 GREY = (128 , 128 ,125)
 blackPion = (0, 0, 0)
 WhitePion = (255, 255, 255)
+
+
+
+
