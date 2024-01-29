@@ -1,5 +1,5 @@
 import pygame
-from constants import BLACK , WHITE , SQUARE_SIZE , GREY
+from .constants import BLACK , WHITE , SQUARE_SIZE , GREY
 
 
 class Pion :
