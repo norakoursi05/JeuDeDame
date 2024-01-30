@@ -3,7 +3,7 @@ from frontend.constants import WIDTH , HEIGHT  , SQUARE_SIZE
 from backend.server import server
 
 
-screen = pygame.display.set_mode((800 , 800))
+screen = pygame.display.set_mode((700 , 700))
 
 
 class GameDisplay:
