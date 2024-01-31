@@ -1,6 +1,8 @@
 import pygame 
-from frontend.constants import WIDTH , HEIGHT  , SQUARE_SIZE
+from frontend.constants import WIDTH , HEIGHT  , SQUARE_SIZE ,  SILVER_DAME
 from backend.server import server
+
+
 
 
 screen = pygame.display.set_mode((700 , 700))
@@ -13,12 +15,19 @@ class GameDisplay:
 
     def display_winner(self, winner_color):
         font = pygame.font.Font(None, 90)
-        text = font.render(f"{winner_color} Wins!", True, (255, 255, 255))
+
+        if winner_color == (0, 0, 0): 
+            winner_text = "Black Wins!"
+        elif winner_color == (255, 255, 255):  
+            winner_text = "White Wins!"
+        else:
+            winner_text = "Draw!"  
+
+        text = font.render(winner_text, True, (255, 255, 255))  
         text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
         self.screen.blit(text, text_rect)
         pygame.display.flip()
-        pygame.time.wait(10000)  # Display for 2 seconds
-        # self.server.reset() 
+        pygame.time.wait(10000) 
 
 
 def get_row_col_from_mouse(pos):
@@ -51,7 +60,6 @@ def main():
         Server.update()
 
         winner_color = Server.winner()
-        # print('the winner color is ', winner_color)
         if winner_color:
             game_display.display_winner(winner_color)
             running = False
@@ -64,7 +72,5 @@ def main():
 if __name__ == "__main__":
     main()
 
-
-# main()
 
     

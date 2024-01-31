@@ -1,5 +1,5 @@
 import pygame 
-from frontend.constants import BLACK , WHITE , BLUE , SQUARE_SIZE
+from frontend.constants import BLACK , WHITE , BLUE , SQUARE_SIZE , GREY , SILVER , SILVER_DAME
 from frontend.plateau import Plateau
 from frontend.pion import Pion
 
@@ -8,15 +8,20 @@ class server :
         self.selected = None 
         self.plateau = Plateau()
         self.turn = None
+        self.turnK = GREY
         self.valid_moves = {}
         self.win = win 
         self.first = True
+        self.continue_turn = False
     
     def setfirst (self , att):
         self.first = att
 
     def setTurn(self , turn ):
         self.turn = turn
+    
+    def setTurnK(self , turnk) :
+        self.turnk = turnk
 
 
     
@@ -25,7 +30,6 @@ class server :
         self.draw_valid_moves(self.valid_moves)
         pygame.display.update()
 
-    # # 1 underscore mean private
     def _initialization(self):
         self.selected = None 
         self.plateau = Plateau()
@@ -35,74 +39,63 @@ class server :
     def reset(self):
         self._initialization()
 
-    def select(self , row , col ):
-        if self.selected  :
-            # print('we enter here')
-            result = self._move(row , col)
-            if not result :
+  
+    def select(self, row, col):
+        if self.selected:
+            result = self._move(row, col)
+            if not result:
                 self.selected = None
-                self.select(row , col)
-        else :
+                self.select(row, col)
+        else:
             pion = self.plateau.get_pion(row, col)
-            if self.first :
-                self.setTurn(pion.color)
+            if self.first:
+                self.setTurnK(GREY if (isinstance(pion, Pion) and pion.color == SILVER) else SILVER)
+                self.setTurn(pion.color) if isinstance(pion, Pion) else None
                 self.first = False
-            # print('turn color is ', self.turn)
-            if pion != 0 and pion.color == self.turn:
+
+            if  isinstance(pion, Pion) and pion != 0 and (pion.color == self.turn or pion.color == self.turnk):
                 self.selected = pion
-                # print('le pion est :',pion)
                 self.valid_moves = self.plateau.get_valid_moves(pion)
                 print('valid moves are ', self.valid_moves)
-                return True   
-            return False
-        
-  
+                return True
 
-    # def _move(self, row, col):
-    #     piece = self.plateau.get_pion(row, col)
-    #     print('the value of the piece is ', piece)
+        return False
 
-    #     if self.selected and piece == 0 and (row, col) in self.valid_moves:
-    #         self.plateau.changerPosition(self.selected, row, col)
-    #         skipped = self.valid_moves[(row , col)]
-    #         print('the self.first is now ', self.first)
-    #         if skipped :
-    #             self.plateau.supprimer(skipped)
-    #             # print('skipped color :', skipped)
-    #             # self.plateau.black_restant =  self.plateau.black_restant-1
-    #         self.change_turn()
-    #     else:
-    #         return False
 
-    #     return True
-        
     def _move(self, row, col):
         piece = self.plateau.get_pion(row, col)
-        print('the value of the piece is ', piece)
-
         if self.selected and piece == 0 and (row, col) in self.valid_moves:
             move_info = self.valid_moves[(row, col)]
-            # moved_pawn, row , col , color , is_skip = move_info
-            if len(move_info) == 4:
-                moved_pawn, r, c, is_skip = move_info
-                color = None  # or assign a default value if needed
-            else:
-                moved_pawn, r, c, color, is_skip = move_info
+            moved_pawn, r, c, is_skip = move_info[:4] if len(move_info) == 4 else move_info[:5]
+            color = None if len(move_info) == 4 else move_info[3]
 
-            print('moved_pawn', moved_pawn)
             self.plateau.changerPosition(self.selected, row, col)
             
             if is_skip:
-                self.plateau.supprimer(r , c , color)
+                self.handle_captures(r, c, color)
+                self.selected = self.plateau.get_pion(row, col)  # Update selected to the new position
+                additional_moves = self.plateau.get_valid_moves(self.selected)
+                additional_capture_moves = {move: details for move, details in additional_moves.items() if details[-1]}
 
+                if additional_capture_moves:
+                    print('Additional capture moves available, BLACK retains the turn.')
+                    return True
+                else:
+                    print('No additional capture moves, turn changes.')
             self.change_turn()
-            print('Move successful!')
+            self.selected = None  
+            return True
         else:
             print('Invalid move!')
             return False
 
-        return True
 
+    def handle_captures(self, r, c, color):
+        if isinstance(r, (list, tuple)) and isinstance(c, (list, tuple)):
+            for skip_row, skip_col in zip(r, c):
+                self.plateau.supprimer(skip_row, skip_col, color)
+        else:
+            self.plateau.supprimer(r, c, color)
 
 
     
@@ -111,12 +104,34 @@ class server :
             row, col = move
             pygame.draw.circle(self.win, BLUE, (col * SQUARE_SIZE + SQUARE_SIZE//2, row * SQUARE_SIZE + SQUARE_SIZE//2), 15)
 
+
+
+
     def change_turn(self):
+        if hasattr(self, 'continue_turn') and self.continue_turn:
+
+            self.continue_turn = False
+            print("BLACK retains the turn after a capture.")
+            return  
         self.valid_moves = {}
+
+
         if self.turn == WHITE:
             self.turn = BLACK
-        else:
+            self.turnk = GREY  
+        elif self.turn == BLACK:
             self.turn = WHITE
+            self.turnk = SILVER_DAME  
+
+        elif self.turnK == GREY:
+            self.turnK = SILVER_DAME
+            self.turn = WHITE
+        elif self.turnK == SILVER_DAME:
+            self.turnK = GREY
+            self.turn = BLACK
+
+      
+
 
     def winner(self):
         return self.plateau.winner()

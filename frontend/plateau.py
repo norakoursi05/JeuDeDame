@@ -1,5 +1,5 @@
 import pygame 
-from frontend.constants import SILVER , BLACK , ROWS , COLS , SQUARE_SIZE , WHITE,blackPion , WhitePion , GREY
+from frontend.constants import SILVER , BLACK , ROWS , COLS , SQUARE_SIZE , WHITE,blackPion , WhitePion , GREY , SILVER_DAME
 from frontend.pion import Pion
 
 class Plateau :
@@ -9,15 +9,15 @@ class Plateau :
         self.red_kings = self.white_kings = 0
         self.create_Plateau()
 
-    # Draw just squares 
 
     def draw_squares(self , win):
         win.fill(SILVER)
         for row in range(ROWS):
             for col in range(row % 2 , COLS , 2):
                 pygame.draw.rect(win , BLACK , (row*SQUARE_SIZE , col*SQUARE_SIZE , SQUARE_SIZE , SQUARE_SIZE ))
+
+
         
-    #  draw just pieces 
             
     def create_Plateau(self):
         for row in range(ROWS):
@@ -33,22 +33,23 @@ class Plateau :
                 else :
                     self.plateau[row].append(0)
     
-    # draw all the squares and pieces 
+
 
     def draw(self , win):
         self.draw_squares(win)
         for row in range(ROWS):
             for col in range(COLS):
-                # we should call the function here
                 pion = self.plateau[row][col]
                 if pion != 0:
-                    pion.draw(win) 
+                    pion.draw(win)
 
+                    
 
     def get_valid_moves(self, pion):
         ROWS = 7
         moves = {}
         r = pion.row
+        COLS = 7
         print('the row of pion is ', r)
         col = pion.col
         start_ligne_black = r 
@@ -57,74 +58,144 @@ class Plateau :
         start_ligne_white = r
         stop_ligne_white = r + 1
         step_ligne_white = 1
+        nbr_pion_should_be_deleted = []
         print('la couleur du pion is', pion.color)
+
+
         if pion.color == BLACK:
-            for row in range(start_ligne_black, stop_ligne_black, step_ligne_black):
-                if 0 <= row <= ROWS:
-                    posibility_one = self.get_pion(row - 1, col - 1)
-                    print('posibility one', posibility_one)
-                    posibility_two = self.get_pion(row - 1, col + 1)
-                    posibility_three = self.get_pion(row - 2, col - 2)
-                    posibility_four = self.get_pion(row - 2, col + 2)
-                    if posibility_one == 0: 
-                        # this false means is skipped or not
-                        moves[(row - 1, col - 1)] = (posibility_one, row-1 , col-1 ,  False)
-                    if posibility_two == 0:
-                        moves[(row - 1, col + 1)] = (posibility_two, row-1 , col-1 ,  False)
+            print('la valeur de pion.dame is ', pion.dame)
+            directions = [(-1, -1), (-1, 1)]  
+            for d_row, d_col in directions:
+                next_row, next_col = r + d_row, col + d_col
+                if 0 <= next_row <= ROWS and 0 <= next_col <= COLS:
+                    next_pion = self.get_pion(next_row, next_col)
+                    if next_pion == 0:
+                        moves[(next_row, next_col)] = (next_pion, next_row, next_col, False)
+                    elif next_pion.color == WHITE:
+                        jump_row, jump_col = next_row + d_row, next_col + d_col
+                        if 0 <= jump_row <= ROWS and 0 <= jump_col <= COLS:
+                            jump_pion = self.get_pion(jump_row, jump_col)
+                            if jump_pion == 0:
+                                moves[(jump_row, jump_col)] = (jump_pion, next_row, next_col, True)
+                                print('we inter in this case')
 
-                    if posibility_one and posibility_one != 0 and posibility_one.color == WHITE  and posibility_three == 0 : 
-                            moves[(row - 2, col - 2)] = (posibility_three, posibility_one.row , posibility_one.col, posibility_one.color ,  True)
-                            print('we inter in this case ')
-                    if posibility_two and posibility_two != 0 and posibility_two.color == WHITE  and  posibility_four == 0 : 
-                            moves[(row - 2, col + 2)] = (posibility_four, posibility_two.row  , posibility_two.col , posibility_two.color ,  True)
-                            print('we inter in this case ')
 
-        if pion.color == WHITE :
-            for row in range(start_ligne_white, stop_ligne_white, step_ligne_white):
-                if 0 <= row < ROWS:
-                    posibility_one = self.get_pion(row + 1, col - 1)
-                    print('posibility one', posibility_one)
-                    posibility_two = self.get_pion(row + 1, col + 1)
-                    posibility_three = self.get_pion(row + 2, col - 2)
-                    posibility_four = self.get_pion(row + 2, col + 2)
-                    if posibility_one == 0: 
-                        moves[(row + 1, col - 1)] = (posibility_one , row + 1 , col - 1 , False)
-                    if posibility_two == 0:
-                        moves[(row + 1, col + 1)] = (posibility_two , row +1 , col+1 ,  False)
-                    
-                    if posibility_one and posibility_one != 0 and posibility_one.color == BLACK and posibility_three == 0 :  
-                        moves[(row + 2, col - 2)] = (posibility_three , posibility_one.row , posibility_one.col , posibility_one.color ,  True)
-                        print('we inter in this case ')
+        if pion.color == GREY:
+            ROWS = 7
+            COLS = 7
+            r = pion.row
+            col = pion.col
 
-                    if posibility_two and posibility_two != 0 and posibility_two.color == BLACK and posibility_four == 0 :  
-                        moves[(row + 2, col + 2)] = (posibility_four , posibility_two.row , posibility_two.col , posibility_two.color ,  True)
-                        print('we inter in this case ')
-        print('the valid moves form method is ', moves)
+            for direction in [(-1, -1), (-1, 1), (1, -1), (1, 1)] :
+                d_row, d_col = direction
+                for distance in range(1, 8):  
+                    dest_row, dest_col = r + distance * d_row, col + distance * d_col
+                    if 0 <= dest_row <= ROWS and 0 <= dest_col <= COLS:
+                        current_pion = self.get_pion(dest_row, dest_col)
+                        if current_pion == 0:
+                            moves[(dest_row, dest_col)] = (current_pion, [dest_row], [dest_col], False)
+                        elif  current_pion.color == WHITE:
+                            skip_row = current_pion.row
+                            skip_col = current_pion.col
+                            if 0 <= skip_row <= ROWS and 0 <= skip_col <= COLS:
+                                posibility = self.get_pion(skip_row, skip_col)
+                                if posibility == 0 :
+                                    moves[(skip_row, skip_col)] = (posibility,current_pion.row, current_pion.col, current_pion.color, True)
+                        else :
+                            break
+
+
+        if pion.color == WHITE:
+            print('la valeur de pion.dame is ', pion.dame)
+            directions = [(1, -1), (1, 1)]  
+            for d_row, d_col in directions:
+                next_row, next_col = r + d_row, col + d_col
+                if 0 <= next_row <= ROWS and 0 <= next_col <= COLS:
+                    next_pion = self.get_pion(next_row, next_col)
+                    if next_pion == 0:
+                        moves[(next_row, next_col)] = (next_pion, next_row, next_col, False)
+                    elif next_pion.color == BLACK:
+                        jump_row, jump_col = next_row + d_row, next_col + d_col
+                        if 0 <= jump_row <= ROWS and 0 <= jump_col <= COLS:
+                            jump_pion = self.get_pion(jump_row, jump_col)
+                            if jump_pion == 0:
+                                moves[(jump_row, jump_col)] = (jump_pion, next_row, next_col, True)
+                                print('we inter in this case')
+    
+                
+
+       
+
+
+        if pion.color == SILVER_DAME:
+            ROWS = 7
+            COLS = 7
+            r = pion.row
+            col = pion.col
+
+            for direction in [(-1, -1), (-1, 1), (1, -1), (1, 1)] :
+                d_row, d_col = direction
+                for distance in range(1, 8):  
+                    dest_row, dest_col = r + distance * d_row, col + distance * d_col
+                    if 0 <= dest_row <= ROWS and 0 <= dest_col <= COLS:
+                        current_pion = self.get_pion(dest_row, dest_col)
+                        if current_pion == 0:
+                            moves[(dest_row, dest_col)] = (current_pion, [dest_row], [dest_col], False)
+                        elif  current_pion.color == WHITE:
+                            skip_row = current_pion.row
+                            skip_col = current_pion.col
+                            if 0 <= skip_row <= ROWS and 0 <= skip_col <= COLS:
+                                posibility = self.get_pion(skip_row, skip_col)
+                                if posibility == 0 :
+                                    moves[(skip_row, skip_col)] = (posibility,current_pion.row, current_pion.col, current_pion.color, True)
+                        else :
+                            break
         return moves
+                
 
     
  
-    # def get_pion(self, row, col):
-    #     return self.plateau[row][col]
     def get_pion(self, row, col):
         if 0 <= row < ROWS and 0 <= col < COLS:
             return self.plateau[row][col]
         else:
-            # Handle the case when indices are out of range
             return None
     
     def get_pion_color(self , row , col):
         pion = self.get_pion(row, col)
-        pion_color = pion.color
-        return pion_color 
+        if pion != 0:
+            pion_color = pion.color
+            return pion_color
+        else:
+            return None
     
 
     def changerPosition(self, piece, row, col):
+        if piece.dame:
+            direction_row = 1 if row > piece.row else -1
+            direction_col = 1 if col > piece.col else -1
+            temp_row, temp_col = piece.row, piece.col
+            while temp_row != row or temp_col != col:
+                temp_row += direction_row
+                temp_col += direction_col
+                temp_piece = self.get_pion(temp_row, temp_col)
+                if temp_piece != 0 and temp_piece.color == WHITE:
+                    self.supprimer(temp_row, temp_col, WHITE)
+
+        if abs(row - piece.row) == 2 :
+            skipped_row = (row + piece.row) // 2
+            skipped_col = (col + piece.col) // 2
+            self.supprimer(skipped_row, skipped_col, self.get_pion_color(skipped_row, skipped_col))
+
+        self.plateau[piece.row][piece.col], self.plateau[row][col] = self.plateau[row][col], self.plateau[piece.row][piece.col]
+        piece.move(row, col)
+
+
         self.plateau[piece.row][piece.col], self.plateau[row][col] = self.plateau[row][col], self.plateau[piece.row][piece.col]
         piece.move(row, col)
 
         if row == 7 or row == 0:
-            piece.make_king()
+            piece.make_dame()
             if piece.color == WHITE:
                 # piece.color = GREY
                 self.white_kings += 1
@@ -157,6 +228,4 @@ class Plateau :
 
 
 
-
-
-        
+#  
